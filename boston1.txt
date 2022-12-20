@@ -1,0 +1,60 @@
+import numpy as np
+import pylab as pl
+from sklearn import datasets
+from sklearn.tree import DecisionTreeRegressor
+
+from sklearn.metrics import mean_squared_error, median_absolute_error, r2_score, mean_absolute_error 
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import train_test_split
+
+def load_data():
+    boston = datasets.boston()
+    return boston
+
+def explore_city_data(city_data):
+    housing_prices=city_data.target
+    housing_features=city_data.data
+    number_of_houses=housing_features.shape[0]
+    number_of_features=housing_features.shape[1]
+    max_price=np.max(housing_prices)
+    min_price=np.min(housing_prices)
+    mean_price=np.mean(housing_prices)
+    median_price=np.median(housing_prices)
+    standard_deviation=np.std(housing_prices)
+    
+    print("number of houses: ",number_of_houses)
+    print("number of features: ",number_of_features)
+    print("max price of house: ",max_price)
+    print("min price of house: ",min_price)
+    print("mean price of house: ",mean_price)
+    print("median price of house: ",median_price)
+    print("Standard Deviation for prices of house: ",standard_deviation)
+
+def performance_metric(label, prediction):
+    return_mean_squared_error(label, prediction)
+    pass
+
+def split_data(city_data):
+    X,y=city_data.data,city_data.target
+    X_train, X_test, y_train, y_test=train_test_split(X,y,test_size=0.30,train_size=0.70,random_state=42)
+    return X_train, y_train, X_test, y_test
+
+def learning_curve(depth,X_train,y_train,X_test,y_test):
+    sizes=np.linspace(1, len(X_train),50)
+    train_err=np.zeroes(len(sizes))
+    test_err=np.zeroes(len(sizes))
+    
+    print("Decision Tree with max Depth: ")
+    print(depth)
+    
+    for i,s in enumerate(sizes):
+        regressor=DecisionTreeRegressor(max_depth=depth)
+        regressor.fit(X_train[:s],y_train[:s])
+        
+        train_err[i]=performance_metric(y_train[:s]),regressor.predict(X_train[:s])
+        
+        test_err[i]=performance_metric(y_test,regressor.predict(X_test))
+        
+        plt.figure()
+        pl.plot(y_train-regressor.predict(X_train))
+        pl.savefig("residual_plot.png")
